@@ -1,0 +1,250 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Schedule Vaccine - VaxxPing</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/schedule_page.css' %}">
+    <style>
+        /* Searchable Dropdown Styles */
+        .search-container {
+            position: relative;
+            width: 100%;
+        }
+        .search-dropdown {
+            position: absolute;
+            width: 100%;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        .search-dropdown div {
+            padding: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .search-dropdown div:hover {
+            background: #f1f1f1;
+        }
+        
+        /* Selected Patient Card */
+        .patient-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            display: none;
+        }
+        .patient-card.active {
+            display: block;
+        }
+        .patient-info p {
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    {% if messages %}
+    {% for message in messages %}
+      <script>alert('{{message}}')</script>
+    {% endfor %}
+    {% endif %}
+
+    <div class="container-fluid p-0">
+        <div class="main-container d-flex">
+            <!-- Left Sidebar -->
+            <div class="sidebar col-1 ">
+                <div class="logo text-center">
+                    <img src="/media/icons/vaccine.png" alt="VaxxPing Logo" width="45px">
+                </div>
+                <div class="sidebar-icon text-center mt-4">
+                    <i class="fas fa-home" onclick="window.location.href='/dashboard';"></i>
+                </div>
+                <div class="sidebar-icon text-center">
+                    <i class="fas fa-bed-pulse"></i>
+                </div>
+                <div class="sidebar-icon text-center">
+                    <i class="fas fa-syringe"></i>
+                </div>
+                <div class="sidebar-icon text-center">
+                    <i class="fas fa-bell"></i>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-11 p-4">
+                <div class="main-content">
+                    <!-- Top Navigation -->
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2 class="page-name">Schedule Vaccine</h2>
+                        <div class="settings-dropdown">
+                            <button class="btn border-0 p-0" id="settingsDropdown" data-bs-toggle="dropdown">
+                                <i class="fas fa-cog settings-icon"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Schedule Vaccine Section -->
+                    <section id="schedule-section">
+                        {% if error %}
+                        <div class="alert alert-danger">{{ error }}</div>
+                        {% endif %}
+                        
+                        <form method="POST" action="{% url 'schedule_vaccine' %}">
+                            {% csrf_token %}
+
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <!-- Searchable Patient Selection -->
+                                    <label for="patient-search">Search Patient:</label>
+                                    <div class="search-container mb-3">
+                                        <input type="text" id="patient-search" class="form-control" placeholder="Type to search..." onkeyup="filterPatients()">
+                                        <div id="patient-dropdown" class="search-dropdown"></div>
+                                    </div>
+
+                                    <!-- Hidden Select Field -->
+                                    <input type="hidden" name="patient" id="selected-patient">
+                                </div>
+                                <div class="col-md-6">
+                                    <!-- Selected Patient Information -->
+                                    <div id="patient-details" class="patient-card active">
+                                        <h5>Selected Patient</h5>
+                                        <div class="patient-info">
+                                            <p><strong>Name:</strong> <span id="patient-name">Not selected</span></p>
+                                            <p><strong>Age:</strong> <span id="patient-age">-</span></p>
+                                            {% if request.GET.patient_id %}
+                                            <script>
+                                                // If patient ID was passed in URL, select it automatically
+                                                document.addEventListener('DOMContentLoaded', function() {
+                                                    const patientId = "{{ request.GET.patient_id }}";
+                                                    const patient = patients.find(p => p.id === patientId);
+                                                    if (patient) {
+                                                        selectPatient(patient);
+                                                    }
+                                                });
+                                            </script>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <!-- Vaccine Selection -->
+                                <div class="col-md-6">
+                                    <label for="vaccine">Select Vaccine:</label>
+                                    <select id="vaccine" name="vaccine" class="form-control" required>
+                                        <option value="">-- Select a Vaccine --</option>
+                                        {% for vaccine in vaccines %}
+                                            <option value="{{ vaccine.id }}">{{ vaccine.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- Appointment Date -->
+                                <div class="col-md-6">
+                                    <label for="appointment_date">Appointment Date:</label>
+                                    <input type="date" id="appointment_date" name="appointment_date" class="form-control" required min="{{ today|date:'Y-m-d' }}">
+                                </div>
+                            </div>
+
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <label for="notes" class="form-label">Notes</label>
+                                        <textarea class="form-control w-100" id="notes" name="notes" rows="3"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="btn btn-primary mt-4">Schedule Vaccine</button>
+                        </form>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isUserSelected=false
+
+        let patients = [
+            {% for patient in patients %}
+                { 
+                    id: "{{ patient.id }}", 
+                    name: "{{ patient.name }}", 
+                    age: "{{ patient.age }}",
+                    display: "{{ patient.name }} ({{ patient.age }} years)"
+                }{% if not forloop.last %},{% endif %}
+            {% endfor %}
+        ];
+        
+        function filterPatients() {
+            let input = document.getElementById('patient-search').value.toLowerCase();
+            let dropdown = document.getElementById('patient-dropdown');
+            dropdown.innerHTML = '';
+
+            if (input === '') {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            let filtered = patients.filter(p => p.display.toLowerCase().includes(input));
+
+            if (filtered.length === 0) {
+                dropdown.innerHTML = '<div class="text-muted px-2">No matches found</div>';
+            }
+
+            filtered.forEach(patient => {
+                let div = document.createElement('div');
+                div.textContent = patient.display;
+                div.onclick = function() {
+                    selectPatient(patient);
+                    dropdown.style.display = 'none';
+                };
+                dropdown.appendChild(div);
+            });
+
+            dropdown.style.display = 'block';
+        }
+        
+        function selectPatient(patient) {
+            // Update search field with display name
+            document.getElementById('patient-search').value = patient.display;
+            
+            // Set hidden input value
+            document.getElementById('selected-patient').value = patient.id;
+            
+            // Update patient details card
+            document.getElementById('patient-name').textContent = patient.name;
+            document.getElementById('patient-age').textContent = patient.age + " years";
+            
+            // Show the patient card
+            document.getElementById('patient-details').classList.add('active');
+        }
+
+        document.addEventListener('click', function(e) {
+            if (!document.getElementById('patient-search').contains(e.target)) {
+                document.getElementById('patient-dropdown').style.display = 'none';
+            }
+        });
+        
+        // Set minimum date for appointment to today
+        document.addEventListener('DOMContentLoaded', function() {
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0];
+            document.getElementById('appointment_date').min = formattedDate;
+        });
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

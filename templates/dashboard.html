@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - VaxxPing</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="{% static 'css/dashboard.css' %}">
+</head>
+<body>
+  <div class="container-fluid p-0">
+    <div class="main-container d-flex">
+      <!-- Left Sidebar -->
+      <div class="sidebar col-1">
+        <div class="logo">
+          <img src="/media/icons/vaccine.png" alt="" width="45px">
+        </div>
+        <div class="sidebar-icon active">
+          <i class="fas fa-home"></i>
+        </div>
+        <div class="sidebar-icon">
+          <i class="fas fa-bed-pulse"></i>
+        </div>
+        <div class="sidebar-icon">
+          <i class="fas fa-syringe"></i>
+        </div>
+        <div class="sidebar-icon">
+          <i class="fas fa-bell"></i>
+        </div>
+        
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="col-11 p-0">
+        <div class="main-content">
+          <!-- Top Navigation -->
+          <div class="d-flex justify-content-end align-items-center mb-4">
+            <div class="d-flex align-items-center">
+                
+              <div class="settings-dropdown me-3">
+                <button class="btn p-0 border-0" type="button" id="settingsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="fas fa-cog settings-icon"></i>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="settingsDropdown">
+                  <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Doctor Banner -->
+          <div class="doctor-banner mb-4">
+            <div>
+              <h2>Welcome,</h2>
+              <h2 class="text-primary">{{user.username}}</h2>
+              <p class="text-muted">Have a nice day at work</p>
+            </div>
+            <img src="/media/img/doctor-illu.jpg" alt="Doctors Illustration" class="doctors-illustration">
+          </div>
+
+          <!-- options secction -->
+
+          <div class="d-flex mb-4 justify-content-around">
+          <a href="{% url 'add_patient' %}">
+              <button class="add-patients-btn me-3"><i class="fas fa-plus me-1"></i> Add Patients</button>
+          </a>
+          <a href="{% url 'add_vaccine' %}">
+            <button class="add-patients-btn me-3"><i class="fas fa-plus me-1"></i> Add Vaccines</button>
+          </a>
+          <a href="{% url 'schedule_vaccine' %}">
+            <button class="add-patients-btn me-3"><i class="fas fa-clipboard-list me-1"></i> Schedule Vaccines </button>
+          </a>
+          <a href="{% url 'view_schedules' %}">
+            <button class="add-patients-btn me-3"><i class="fas fa-magnifying-glass me-1"></i> View Schedules </button>
+          </a>
+          </div>
+          
+
+          <div class="mb-4">
+            
+            <div class="row">
+              <div class="col-3">
+                <div class="stats-card">
+                  <div class="stats-icon patients-icon">
+                    <i class="fas fa-bed-pulse"></i>
+                  </div>
+                  <div class="small text-muted">Total Patients</div>
+                  <div class="stats-number">260</div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="stats-card">
+                  <div class="stats-icon calls-icon">
+                    <i class="fas fa-syringe"></i>
+                  </div>
+                  <div class="small text-muted">Vaccines</div>
+                  <div class="stats-number">8</div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="stats-card">
+                  <div class="stats-icon appointments-icon">
+                    <i class="fas fa-check"></i>
+                  </div>
+                  <div class="small text-muted">Notifications Sent</div>
+                  <div class="stats-number">128</div>
+                </div>
+              </div>
+              <div class="col-3">
+                <div class="stats-card">
+                  <div class="stats-icon emails-icon">
+                    <i class="fas fa-exclamation"></i>
+                  </div>
+                  <div class="small text-muted">Pending Notifications</div>
+                  <div class="stats-number">321</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
